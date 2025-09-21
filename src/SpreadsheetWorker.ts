@@ -4,14 +4,17 @@ self.onmessage = (e) => {
 
   function calculate(str: string): number {
     if (!str.toString().startsWith('=')) return Number(str) || 0;
-    else {
-      const expr = str.substring(1)
+    const expr = str
+      .substring(1)
+      .replace(/([A-Z]+\d+)/g, (ref) => String(computed[ref] ?? sheet[ref]));
+    try {
       return eval(expr);
+    } catch {
+      return NaN;
     }
   }
   for (const cell in sheet) {
     computed[cell] = calculate(sheet[cell]);
   }
-  console.log('Computed:', computed);
   self.postMessage({ computed });
 };
