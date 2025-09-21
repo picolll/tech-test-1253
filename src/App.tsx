@@ -25,11 +25,21 @@ const worker = new Worker(new URL('./SpreadsheetWorker', import.meta.url), { typ
 function App() {
   const [sheet, setSheet] = useState<Record<string, string>>(makeEmptySheet());
   const [computed, setComputed] = useState<Record<string, number>>({});
+  const [flashRows, setFlashRows] = useState<Record<number, boolean>>({});
 
-    useEffect(() => {
+  useEffect(() => {
     worker.onmessage = (e) => setComputed(e.data.computed);
     worker.postMessage({ sheet });
   }, [sheet]);
+
+  useEffect(() => {
+    rows.forEach((row) => {
+      if (cols.some(col => computed[`${col}${row}`] < 0)) {
+        setFlashRows(fr => ({ ...fr, [row]: true }));
+        setTimeout(() => setFlashRows(fr => ({ ...fr, [row]: false })), 500);
+      }
+    });
+  }, [computed]);
 
   function onCellChange(params: CellValueChangedEvent) {
     console.log('onCellChange', params);
@@ -42,16 +52,16 @@ function App() {
 
   type RowData = { id: number } & Record<string, string | number | undefined>;
 
-  const rowData: RowData[] = rows.map(r => {
-    const obj: RowData = { id: r };
-    cols.forEach(c => {
-      obj[c] = computed[`${c}${r}`] ?? sheet[`${c}${r}`];
+  const rowData: RowData[] = rows.map(row => {
+    const obj: RowData = { id: row };
+    cols.forEach(col => {
+      obj[col] = computed[`${col}${row}`] ?? sheet[`${col}${row}`];
     });
     return obj;
   });
 
-  const columnDefs = cols.map(c => ({
-    field: c,
+  const columnDefs = cols.map(col => ({
+    field: col,
     width: 90,
     editable: true,
     cellDataType: false,
@@ -67,6 +77,10 @@ function App() {
           rowData={rowData}
           columnDefs={columnDefs}
           onCellValueChanged={onCellChange}
+          getRowClass={(params) => {
+            const id = params?.data?.id;
+            return id !== undefined && flashRows[id] ? "flash-row" : "";
+          }}
         />
       </div>
     </>

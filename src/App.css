@@ -14,3 +14,18 @@ body, html, #root {
 .ag-cell{
   border-right-color: var(--ag-border-color)
 }
+
+.flash-row {
+  animation: flashRed 0.5s;
+  background: red !important;
+}
+
+@keyframes flashRed {
+  0% {
+    background: red;
+  }
+
+  100% {
+    background: inherit;
+  }
+}
