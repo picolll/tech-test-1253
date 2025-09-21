@@ -10,3 +10,7 @@ body, html, #root {
   width: 400px;  
   margin: auto;
 }
+
+.ag-cell{
+  border-right-color: var(--ag-border-color)
+}
