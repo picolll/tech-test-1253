@@ -1,4 +1,6 @@
-body, html, #root {
+body,
+html,
+#root {
   height: 100%;
   margin: auto;
   padding: auto;
@@ -6,12 +8,12 @@ body, html, #root {
 }
 
 .wrapper {
-  height: 300px;
-  width: 400px;  
+  height: 500px;
+  width: 1000px;
   margin: auto;
 }
 
-.ag-cell{
+.ag-cell {
   border-right-color: var(--ag-border-color)
 }
 

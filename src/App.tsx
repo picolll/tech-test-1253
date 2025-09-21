@@ -3,11 +3,12 @@ import './App.css'
 import { ModuleRegistry, AllCommunityModule, type CellValueChangedEvent } from 'ag-grid-community';
 import { RowNumbersModule, CellSelectionModule } from 'ag-grid-enterprise';
 import { useEffect, useState } from 'react';
+import { useSpreadsheetSync } from './useSpreadsheetSync';
 
 ModuleRegistry.registerModules([AllCommunityModule, RowNumbersModule, CellSelectionModule]);
 
-const cols = ["A", "B", "C"];
-const rows = [1, 2, 3, 4, 5];
+const cols = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+const rows = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 function makeEmptySheet() {
   const sheet: Record<string, string> = {};
@@ -26,6 +27,7 @@ function App() {
   const [sheet, setSheet] = useState<Record<string, string>>(makeEmptySheet());
   const [computed, setComputed] = useState<Record<string, number>>({});
   const [flashRows, setFlashRows] = useState<Record<number, boolean>>({});
+  const { broadcast } = useSpreadsheetSync((s) => setSheet(s));
 
   useEffect(() => {
     worker.onmessage = (e) => setComputed(e.data.computed);
@@ -46,6 +48,7 @@ function App() {
     setSheet(s => {
       const key = `${params.colDef.field}${(params.rowIndex ?? 0) + 1}`;
       const next = { ...s, [key]: params.newValue };
+      broadcast(next);
       return next;
     });
   }
