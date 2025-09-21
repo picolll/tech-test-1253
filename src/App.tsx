@@ -2,7 +2,7 @@ import { AgGridReact } from 'ag-grid-react';
 import './App.css'
 import { ModuleRegistry, AllCommunityModule, type CellValueChangedEvent } from 'ag-grid-community';
 import { RowNumbersModule, CellSelectionModule } from 'ag-grid-enterprise';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 ModuleRegistry.registerModules([AllCommunityModule, RowNumbersModule, CellSelectionModule]);
 
@@ -20,8 +20,16 @@ function makeEmptySheet() {
   return sheet;
 }
 
+const worker = new Worker(new URL('./SpreadsheetWorker', import.meta.url), { type: 'module' });
+
 function App() {
   const [sheet, setSheet] = useState<Record<string, string>>(makeEmptySheet());
+  const [computed, setComputed] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+    worker.onmessage = (e) => setComputed(e.data.computed);
+    worker.postMessage({ sheet });
+  }, [sheet]);
 
   function onCellChange(params: CellValueChangedEvent) {
     console.log('onCellChange', params);
@@ -37,7 +45,7 @@ function App() {
   const rowData: RowData[] = rows.map(r => {
     const obj: RowData = { id: r };
     cols.forEach(c => {
-      obj[c] = sheet[`${c}${r}`];
+      obj[c] = computed[`${c}${r}`] ?? sheet[`${c}${r}`];
     });
     return obj;
   });
