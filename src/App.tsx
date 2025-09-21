@@ -1,6 +1,6 @@
 import { AgGridReact } from 'ag-grid-react';
 import './App.css'
-import { ModuleRegistry, AllCommunityModule, type CellValueChangedEvent } from 'ag-grid-community';
+import { ModuleRegistry, AllCommunityModule, type CellValueChangedEvent, type ValueGetterParams } from 'ag-grid-community';
 import { RowNumbersModule, CellSelectionModule } from 'ag-grid-enterprise';
 import { useEffect, useState } from 'react';
 import { useSpreadsheetSync } from './useSpreadsheetSync';
@@ -13,9 +13,9 @@ const rows = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 function makeEmptySheet() {
   const sheet: Record<string, string> = {};
   cols.forEach(
-    c => rows.forEach(
-      r => (
-        sheet[`${c}${r}`] = "")
+    col => rows.forEach(
+      row => (
+        sheet[`${col}${row}`] = "")
     )
   );
   return sheet;
@@ -44,7 +44,6 @@ function App() {
   }, [computed]);
 
   function onCellChange(params: CellValueChangedEvent) {
-    console.log('onCellChange', params);
     setSheet(s => {
       const key = `${params.colDef.field}${(params.rowIndex ?? 0) + 1}`;
       const next = { ...s, [key]: params.newValue };
@@ -67,7 +66,19 @@ function App() {
     field: col,
     width: 90,
     editable: true,
+    sortable: false,
+    filter: false,
     cellDataType: false,
+    valueGetter: (params: ValueGetterParams) => {
+      return sheet[`${col}${params.data.id}`] !== undefined
+        ? sheet[`${col}${params.data.id}`]
+        : computed[`${col}${params.data.id}`]
+    },
+    cellRenderer: (params: ValueGetterParams) => {
+      return computed[`${col}${params.data.id}`]
+        ? computed[`${col}${params.data.id}`]
+        : sheet[`${col}${params.data.id}`]
+    },
   }));
 
   return (
