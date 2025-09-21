@@ -1,0 +1,12 @@
+body, html, #root {
+  height: 100%;
+  margin: auto;
+  padding: auto;
+  background-color: #f1f1f1;
+}
+
+.wrapper {
+  height: 300px;
+  width: 400px;  
+  margin: auto;
+}
