@@ -1,12 +1,12 @@
 self.onmessage = (e) => {
   const { sheet } = e.data;
   const computed: Record<string, number> = {};
-
+  console.log('Worker received sheet', sheet);
   function calculate(str: string): number {
     if (!str.toString().startsWith('=')) return Number(str) || 0;
     const expr = str
       .substring(1)
-      .replace(/([A-Z]+\d+)/g, (ref) => String(computed[ref] ?? sheet[ref]));
+      .replace(/([A-Za-z]+\d+)/g, (ref) => String(computed[ref.toUpperCase()] ?? sheet[ref.toUpperCase()]));
     try {
       return eval(expr);
     } catch {
@@ -16,5 +16,6 @@ self.onmessage = (e) => {
   for (const cell in sheet) {
     computed[cell] = calculate(sheet[cell]);
   }
+  console.log('Computed', computed);
   self.postMessage({ computed });
 };
