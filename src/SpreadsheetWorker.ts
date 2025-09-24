@@ -25,8 +25,8 @@ self.onmessage = (e) => {
 
     const expr = str
       .substring(1)
-      .replace(/([A-Z]+\d+)/gi, (ref) => {
-        const value = evalCell(ref);
+      .replace(/([A-Za-z]+\d+)/gi, (ref) => {
+        const value = evalCell(ref.toUpperCase());
         return String(isNaN(value) ? 0 : value);
       });
 
