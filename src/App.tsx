@@ -2,7 +2,7 @@ import { AgGridReact } from 'ag-grid-react';
 import './App.css'
 import { ModuleRegistry, AllCommunityModule, type CellValueChangedEvent, type ValueGetterParams } from 'ag-grid-community';
 import { RowNumbersModule, CellSelectionModule } from 'ag-grid-enterprise';
-import { useEffect, useState } from 'react';
+import {  useCallback, useEffect, useMemo, useState } from 'react';
 import { useSpreadsheetSync } from './useSpreadsheetSync';
 
 ModuleRegistry.registerModules([AllCommunityModule, RowNumbersModule, CellSelectionModule]);
@@ -43,26 +43,26 @@ function App() {
     });
   }, [computed]);
 
-  function onCellChange(params: CellValueChangedEvent) {
+  const onCellChange = useCallback((params: CellValueChangedEvent) => {
     setSheet(s => {
       const key = `${params.colDef.field}${(params.rowIndex ?? 0) + 1}`;
       const next = { ...s, [key]: params.newValue };
       broadcast(next);
       return next;
     });
-  }
+  }, [broadcast]);
 
   type RowData = { id: number } & Record<string, string | number | undefined>;
 
-  const rowData: RowData[] = rows.map(row => {
+  const rowData: RowData[] = useMemo(() => rows.map(row => {
     const obj: RowData = { id: row };
     cols.forEach(col => {
       obj[col] = computed[`${col}${row}`] ?? sheet[`${col}${row}`];
     });
     return obj;
-  });
+  }), [sheet, computed]);
 
-  const columnDefs = cols.map(col => ({
+  const columnDefs = useMemo(() => cols.map(col => ({
     field: col,
     width: 90,
     editable: true,
@@ -74,12 +74,13 @@ function App() {
         ? sheet[`${col}${params.data.id}`]
         : computed[`${col}${params.data.id}`]
     },
+ 
     cellRenderer: (params: ValueGetterParams) => {
       return computed[`${col}${params.data.id}`]
         ? computed[`${col}${params.data.id}`]
         : sheet[`${col}${params.data.id}`]
     },
-  }));
+  })), [sheet, computed]);
 
   return (
     <>
